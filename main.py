@@ -12,6 +12,10 @@ from sklearn.metrics import confusion_matrix
 from sklearn.metrics import accuracy_score
 from scipy.cluster.vq import *
 from sklearn.preprocessing import StandardScaler
+from sklearn.cluster import KMeans
+from sklearn.cluster import MeanShift, estimate_bandwidth
+from sklearn import preprocessing
+from sklearn.datasets import make_blobs
 
 
 def get_descriptors_default(img):
@@ -170,6 +174,24 @@ if __name__ == '__main__':
     descriptors = des_list[0][1]
     for path, descriptor in des_list[1:]:
         descriptors = np.vstack((descriptors, descriptor))
+
+    # Compute clustering with MeanShift
+
+    # descriptors_normalized = preprocessing.scale(descriptors)
+
+    # The following bandwidth can be automatically detected using
+    bandwidth = estimate_bandwidth(descriptors, quantile=0.2, n_samples=500)
+
+
+    # ms = MeanShift(bandwidth=bandwidth, bin_seeding=True)
+    # ms.fit(descriptors)
+    # labels = ms.labels_
+    # cluster_centers = ms.cluster_centers_
+    #
+    # labels_unique = np.unique(labels)
+    # n_clusters_ = len(labels_unique)
+    #
+    # print("number of estimated clusters : %d" % n_clusters_)
 
     # Perform k-means clustering
     k = 150
