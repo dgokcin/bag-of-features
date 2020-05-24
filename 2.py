@@ -100,13 +100,10 @@ def findSVM(im_features, train_labels, kernel):
     C_param, gamma_param = params.get("C"), params.get("gamma")
     print(C_param, gamma_param)
     class_weight = {
-        0: (807 / (7 * 140)),
-        1: (807 / (7 * 140)),
-        2: (807 / (7 * 133)),
-        3: (807 / (7 * 70)),
-        4: (807 / (7 * 42)),
-        5: (807 / (7 * 140)),
-        6: (807 / (7 * 142))
+        0: (400 / (4 * 100)),
+        1: (400 / (4 * 100)),
+        2: (400 / (4 * 100)),
+        3: (400 / (4 * 100)),
     }
 
     svm = SVC(kernel=kernel, C=C_param, gamma=gamma_param,
@@ -161,8 +158,7 @@ def plotConfusionMatrix(y_true, y_pred, classes,
 def plotConfusions(true, predictions):
     np.set_printoptions(precision=2)
 
-    class_names = ["city", "face", "green", "house_building", "house_indoor",
-                   "office", "sea"]
+    class_names = ["airplanes", "cars", "faces", "motorbikes"]
     plotConfusionMatrix(true, predictions, classes=class_names,
                         title='Confusion matrix, without normalization')
 
@@ -186,20 +182,14 @@ def trainModel(path, no_clusters, kernel):
     image_count = len(images)
 
     for img_path in images:
-        if ("city" in img_path):
+        if ("airplanes" in img_path):
             class_index = 0
-        elif ("face" in img_path):
+        elif ("cars" in img_path):
             class_index = 1
-        elif ("green" in img_path):
+        elif ("faces" in img_path):
             class_index = 2
-        elif ("house_building" in img_path):
+        elif ("motorbikes" in img_path):
             class_index = 3
-        elif ("house_indoor" in img_path):
-            class_index = 4
-        elif ("office" in img_path):
-            class_index = 5
-        else:
-            class_index = 6
 
         train_labels = np.append(train_labels, class_index)
         img = readImage(img_path)
@@ -239,13 +229,10 @@ def testModel(path, kmeans, scale, svm, im_features, no_clusters, kernel):
     descriptor_list = []
 
     name_dict = {
-        "0": "city",
-        "1": "face",
-        "2": "green",
-        "3": "house_building",
-        "4": "house_indoor",
-        "5": "office",
-        "6": "sea"
+        "0": "airplanes",
+        "1": "cars",
+        "2": "faces",
+        "3": "motorbikes",
     }
 
     sift = cv2.xfeatures2d.SIFT_create()
@@ -258,20 +245,14 @@ def testModel(path, kmeans, scale, svm, im_features, no_clusters, kernel):
             count += 1
             descriptor_list.append(des)
 
-            if ("city" in img_path):
-                true.append("city")
-            elif ("face" in img_path):
-                true.append("face")
-            elif ("green" in img_path):
-                true.append("green")
-            elif ("house_building" in img_path):
-                true.append("house_building")
-            elif ("house_indoor" in img_path):
-                true.append("house_indoor")
-            elif ("office" in img_path):
-                true.append("office")
-            else:
-                true.append("sea")
+            if ("airplanes" in img_path):
+                true.append("airplanes")
+            elif ("cars" in img_path):
+                true.append("cars")
+            elif ("faces" in img_path):
+                true.append("faces")
+            elif ("motorbikes" in img_path):
+                true.append("motorbikes")
 
     descriptors = vstackDescriptors(descriptor_list)
 
