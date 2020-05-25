@@ -51,7 +51,7 @@ def getDescriptors(sift, img, feature_extraction):
               for x in range(0, img.shape[1], step_size)]
 
         kp, des = sift.compute(img, kp)
-        draw_keypoints(img, kp)
+        # draw_keypoints(img, kp)
 
         return des
 
@@ -80,7 +80,7 @@ def clusterDescriptors(descriptors, no_clusters, alg):
         bandwidth = estimate_bandwidth(descriptors_normalized, quantile=0.3,
                                        n_samples=500)
 
-        ms = MeanShift(bandwidth=bandwidth)
+        ms = MeanShift(bandwidth=bandwidth, n_jobs=-1)
         ms.fit(descriptors_normalized)
         labels = ms.labels_
         cluster_centers = ms.cluster_centers_
@@ -93,13 +93,13 @@ def clusterDescriptors(descriptors, no_clusters, alg):
         return ms
 
 
-def extractFeatures(kmeans, descriptor_list, image_count, no_clusters):
+def extractFeatures(cluster, descriptor_list, image_count, no_clusters):
     im_features = np.array([np.zeros(no_clusters) for i in range(image_count)])
     for i in range(image_count):
         for j in range(len(descriptor_list[i])):
             feature = descriptor_list[i][j]
             feature = feature.reshape(1, 128)
-            idx = kmeans.predict(feature)
+            idx = cluster.predict(feature)
             im_features[i][idx] += 1
 
     return im_features
@@ -121,36 +121,6 @@ def plotHistogram(im_features, no_clusters):
     plt.title("Complete Vocabulary Generated")
     plt.xticks(x_scalar + 0.4, x_scalar)
     plt.show()
-
-
-def svcParamSelection(X, y, kernel, nfolds):
-    Cs = [0.5, 0.1, 0.15, 0.2, 0.3]
-    gammas = [0.1, 0.11, 0.095, 0.105]
-    param_grid = {'C': Cs, 'gamma': gammas}
-    grid_search = GridSearchCV(SVC(kernel=kernel), param_grid, cv=nfolds)
-    grid_search.fit(X, y)
-    return grid_search.best_params_
-
-
-def findSVM(im_features, train_labels, kernel):
-    features = im_features
-    if (kernel == "precomputed"):
-        features = np.dot(im_features, im_features.T)
-
-    params = svcParamSelection(features, train_labels, kernel, 5)
-    C_param, gamma_param = params.get("C"), params.get("gamma")
-    print(C_param, gamma_param)
-    class_weight = {
-        0: (400 / (4 * 100)),
-        1: (400 / (4 * 100)),
-        2: (400 / (4 * 100)),
-        3: (400 / (4 * 100)),
-    }
-
-    svm = SVC(kernel=kernel, C=C_param, gamma=gamma_param,
-              class_weight=class_weight)
-    svm.fit(features, train_labels)
-    return svm
 
 
 def plotConfusionMatrix(y_true, y_pred, classes,
@@ -262,7 +232,7 @@ def trainModel(path, no_clusters, clustering_alg, feature_extraction):
     return cluster, scale, clf, im_features
 
 
-def testModel(path, kmeans, scale, svm, im_features, no_clusters,
+def testModel(path, cluster, scale, svm, im_features, no_clusters,
               feature_extraction):
     test_images = getFiles(False, path)
     print("Test images path detected.")
@@ -299,7 +269,7 @@ def testModel(path, kmeans, scale, svm, im_features, no_clusters,
 
     descriptors = vstackDescriptors(descriptor_list)
 
-    test_features = extractFeatures(kmeans, descriptor_list, count,
+    test_features = extractFeatures(cluster, descriptor_list, count,
                                     no_clusters)
 
     test_features = scale.transform(test_features)
@@ -318,17 +288,16 @@ def testModel(path, kmeans, scale, svm, im_features, no_clusters,
 
 
 def execute(train_path, test_path, no_clusters, clustering_alg,
-            feature_extraction):
+            feature_extraction, save_file):
     cluster, scale, svm, im_features = trainModel(train_path, no_clusters,
                                                  clustering_alg, feature_extraction)
 
 
     # Save the SVM
-    joblib.dump((cluster, scale, svm, im_features), "bof.pkl",
+    joblib.dump((cluster, scale, svm, im_features), (save_file + ".pkl"),
                 compress=3)
 
-
-    cluster, scale, svm, im_features = joblib.load("bof.pkl")
+    cluster, scale, svm, im_features = joblib.load(save_file + ".pkl")
 
     testModel(test_path, cluster, scale, svm, im_features, no_clusters, feature_extraction)
 
@@ -344,11 +313,14 @@ if __name__ == '__main__':
     parser.add_argument('--no_clusters', action="store", dest="no_clusters",
                         default=50)
     parser.add_argument('--clustering_alg', action="store",
-                        dest="clustering_alg", default="kmeans", required=True)
+                        dest="clustering_alg", default="cluster", required=True)
     parser.add_argument('--feature_extraction', action="store",
                         dest="feature_extraction", default="kp",
                         required=True)
+    parser.add_argument('--save_file', action="store",
+                        dest="save_file", default="latest")
     args = vars(parser.parse_args())
 
     execute(args['train_path'], args['test_path'], int(args['no_clusters']),
-            args['clustering_alg'], args['feature_extraction'])
+            args['clustering_alg'], args['feature_extraction'],
+            args['save_file'])
