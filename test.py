@@ -77,13 +77,15 @@ def clusterDescriptors(descriptors, no_clusters, alg):
     elif alg == 'meanshift':
 
         descriptors_normalized = preprocessing.scale(descriptors)
-        bandwidth = estimate_bandwidth(descriptors_normalized, quantile=0.3,
+        bandwidth = estimate_bandwidth(descriptors_normalized, quantile=0.2,
                                        n_samples=500)
 
-        ms = MeanShift(bandwidth=bandwidth, n_jobs=-1)
+        ms = MeanShift(bandwidth=bandwidth, n_jobs=-1, bin_seeding=True,
+                       cluster_all=False)
         ms.fit(descriptors_normalized)
         labels = ms.labels_
         cluster_centers = ms.cluster_centers_
+        print(bandwidth)
 
         labels_unique = np.unique(labels)
         n_clusters_ = len(labels_unique)
