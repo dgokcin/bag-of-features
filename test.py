@@ -45,7 +45,7 @@ def getDescriptors(sift, img, feature_extraction):
         # draw_keypoints(img, kp)
         return des
     if feature_extraction == 'grid':
-        step_size = 10
+        step_size = 15
         kp = [cv2.KeyPoint(x, y, step_size) for y in
               range(0, img.shape[0], step_size)
               for x in range(0, img.shape[1], step_size)]
@@ -71,14 +71,16 @@ def vstackDescriptors(descriptor_list):
 
 
 def clusterDescriptors(descriptors, no_clusters, alg):
+    scaler = preprocessing.StandardScaler()
+    descriptors_normalized = scaler.fit_transform(descriptors)
+
     if alg == 'kmeans':
-        kmeans = KMeans(n_clusters=no_clusters).fit(descriptors)
+        kmeans = KMeans(n_clusters=no_clusters).fit(descriptors_normalized)
         return kmeans
     elif alg == 'meanshift':
 
-        descriptors_normalized = preprocessing.scale(descriptors)
         bandwidth = estimate_bandwidth(descriptors_normalized, quantile=0.2,
-                                       n_samples=500)
+                                       n_samples=5000)
 
         ms = MeanShift(bandwidth=bandwidth, n_jobs=-1, bin_seeding=True,
                        cluster_all=False)
@@ -86,6 +88,7 @@ def clusterDescriptors(descriptors, no_clusters, alg):
         labels = ms.labels_
         cluster_centers = ms.cluster_centers_
         print(bandwidth)
+        print(cluster_centers)
 
         labels_unique = np.unique(labels)
         n_clusters_ = len(labels_unique)
@@ -223,7 +226,16 @@ def trainModel(path, no_clusters, clustering_alg, feature_extraction):
     im_features = scale.transform(im_features)
     print("Train images normalized.")
 
-    plotHistogram(im_features, no_clusters)
+    if clustering_alg == 'meanshift':
+        labels = cluster.labels_
+        cluster_centers = cluster.cluster_centers_
+
+        labels_unique = np.unique(labels)
+        n_clusters_ = len(labels_unique)
+        plotHistogram(im_features, n_clusters_)
+    else:
+        plotHistogram(im_features, no_clusters)
+
     print("Features histogram plotted.")
 
     clf = LinearSVC()
