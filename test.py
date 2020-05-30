@@ -26,8 +26,8 @@ def getFiles(train, path):
         for file in os.listdir(os.path.join(path, folder)):
             images.append(os.path.join(path, os.path.join(folder, file)))
 
-    if (train is True):
-        np.random.shuffle(images)
+    # if (train is True):
+    #     np.random.shuffle(images)
 
     return images
 
@@ -58,8 +58,8 @@ def getDescriptors(sift, img, feature_extraction):
 
 def readImage(img_path):
     img = cv2.imread(img_path, 0)
-    return cv2.resize(img, (150, 150))
-    # return img
+    # return cv2.resize(img, (150, 150))
+    return img
 
 
 def vstackDescriptors(descriptor_list):
@@ -80,7 +80,7 @@ def clusterDescriptors(descriptors, no_clusters, alg):
     elif alg == 'meanshift':
 
         bandwidth = estimate_bandwidth(descriptors_normalized, quantile=0.2,
-                                       n_samples=5000)
+                                       n_samples=500)
 
         ms = MeanShift(bandwidth=bandwidth, n_jobs=-1, bin_seeding=True,
                        cluster_all=False)
@@ -98,16 +98,19 @@ def clusterDescriptors(descriptors, no_clusters, alg):
         return ms
 
 
+# Build Histogram
 def extractFeatures(cluster, descriptor_list, image_count, no_clusters):
-    im_features = np.array([np.zeros(no_clusters) for i in range(image_count)])
+    histogram = np.array([np.zeros(len(cluster.cluster_centers_)) for i in
+                            range(image_count)])
     for i in range(image_count):
         for j in range(len(descriptor_list[i])):
             feature = descriptor_list[i][j]
             feature = feature.reshape(1, 128)
+            # nearest neigh.
             idx = cluster.predict(feature)
-            im_features[i][idx] += 1
+            histogram[i][idx] += 1
 
-    return im_features
+    return histogram
 
 
 def normalizeFeatures(scale, features):
@@ -124,7 +127,7 @@ def plotHistogram(im_features, no_clusters):
     plt.xlabel("Visual Word Index")
     plt.ylabel("Frequency")
     plt.title("Complete Vocabulary Generated")
-    plt.xticks(x_scalar + 0.4, x_scalar)
+    # plt.xticks(x_scalar + 0.4, x_scalar)
     plt.show()
 
 
@@ -194,7 +197,6 @@ def trainModel(path, no_clusters, clustering_alg, feature_extraction):
     sift = cv2.xfeatures2d.SIFT_create()
     descriptor_list = []
     train_labels = np.array([])
-    label_count = 7
     image_count = len(images)
 
     for img_path in images:
@@ -209,12 +211,14 @@ def trainModel(path, no_clusters, clustering_alg, feature_extraction):
 
         train_labels = np.append(train_labels, class_index)
         img = readImage(img_path)
+        # Feature Extraction
         des = getDescriptors(sift, img, feature_extraction)
         descriptor_list.append(des)
 
     descriptors = vstackDescriptors(descriptor_list)
     print("Descriptors vstacked.")
 
+    # Dict Computation
     cluster = clusterDescriptors(descriptors, no_clusters, alg=clustering_alg)
     print("Descriptors clustered with " + clustering_alg)
 
@@ -227,19 +231,20 @@ def trainModel(path, no_clusters, clustering_alg, feature_extraction):
     print("Train images normalized.")
 
     if clustering_alg == 'meanshift':
-        labels = cluster.labels_
-        cluster_centers = cluster.cluster_centers_
-
-        labels_unique = np.unique(labels)
-        n_clusters_ = len(labels_unique)
-        plotHistogram(im_features, n_clusters_)
+        pass
+        # labels = cluster.labels_
+        # cluster_centers = cluster.cluster_centers_
+        #
+        # labels_unique = np.unique(labels)
+        # n_clusters_ = len(labels_unique)
+        # plotHistogram(im_features, n_clusters_)
     else:
         plotHistogram(im_features, no_clusters)
 
     print("Features histogram plotted.")
-
     clf = LinearSVC()
     clf.fit(im_features, np.array(train_labels))
+
     print("SVM fitted.")
     print("Training completed.")
 
@@ -308,10 +313,10 @@ def execute(train_path, test_path, no_clusters, clustering_alg,
 
 
     # Save the SVM
-    joblib.dump((cluster, scale, svm, im_features), (save_file + ".pkl"),
-                compress=3)
-
-    cluster, scale, svm, im_features = joblib.load(save_file + ".pkl")
+    # joblib.dump((cluster, scale, svm, im_features), (save_file + ".pkl"),
+    #             compress=3)
+    #
+    # cluster, scale, svm, im_features = joblib.load(save_file + ".pkl")
 
     testModel(test_path, cluster, scale, svm, im_features, no_clusters, feature_extraction)
 
