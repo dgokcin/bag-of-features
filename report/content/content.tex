@@ -42,14 +42,17 @@ dataset-modified/test --no_clusters 50 --clustering_alg kmeans
 \end{lstlisting}
 
 
+\newpage
+
 \section*{Feature Extraction and Description}
 
-Scale invariant feature transform(SIFT) is a feature detection algorithm, to detect
-and describe local features in images. In order to apply SIFT, I first extracted
-the features of the train images using two different methods. I first detected
-keypoints in each image using sift.detectAndCompute and than constructed a
-keypoint array with iterating over the image using two different step sizes, 15
-and 10. For the grids, I used sift.compute.
+Scale invariant feature transform(SIFT) is a feature detection algorithm, to
+detect and describe local features in images. In order to apply SIFT, I first
+extracted the features of the train images using two different methods. First, I
+detected keypoints in each image using sift.detectAndCompute. Than I constructed
+a keypoint array by iterating over each image image using two different step
+sizes, 15 and 10. After obtaining my keypoints, I used sift.compute to get the
+descriptors.
 
 
 \begin{figure}[H]
@@ -64,149 +67,232 @@ and 10. For the grids, I used sift.compute.
 \section*{Dictionary Computation, Feature quantization and Histogram Calculation}
 
 After I got my descriptors, I vertically stacked all of them into an array and
-send the vertically stacked descriptors to my clustering algorithm. After I got
-my cluster, I created a histogram and ended up with the following vocablulary,
-for each experiment.
+send the vertically stacked descriptors to two different clustering algorithms.
+k-means and meanshift.
+
+k-means clustering is a method of vector quantization, that aims to partition n
+observations into k clusters in which each observation belongs to the cluster
+with the nearest mean, serving as a prototype of the cluster.
+
+Mean shift algorithm is a non-parametric clustering technique which does not
+require prior knowledge of the number of clusters, and does not constrain the
+shape of the clusters.
+
+Each cluster center produced by the clustering algorithms became a visual word.
+After obtaining the clusters, I created a histogram by calculating the number of
+occurrences for each visual word and ended up with the following vocabulary, for
+each experiment.
 
 \subsection*{keypoints, k-means: k = 50}
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth]{images/bow-kp-50.png}
+    \includegraphics[scale = 0.5]{images/bow-kp-50.png}
 \end{figure}
 
 \subsection*{keypoints, k-means: k = 250}
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth]{images/bow-kp-250.png}
+    \includegraphics[scale = 0.5]{images/bow-kp-250.png}
 \end{figure}
 
 \subsection*{keypoints, k-means: k = 500}
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth]{images/bow-kp-500.png}
+    \includegraphics[scale = 0.5]{images/bow-kp-500.png}
 \end{figure}
 
-\subsection*{keypoints, k found by Mean Shift}
+%\subsection*{keypoints, k found by Mean Shift}
+
 \subsection*{keypoints, k-means: Meanshift found k}
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale = 0.5]{images/bow-kp-kmeanshift.png}
+\end{figure}
 
 \subsection*{grid-1(step\_size=15), k-means: k = 50}
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth]{images/bow-stp-15-50.png}
+    \includegraphics[scale = 0.5]{images/bow-stp-15-50.png}
 \end{figure}
 
 \subsection*{grid-1(step\_size=15), k-means: k = 250}
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth]{images/bow-stp-15-250.png}
+    \includegraphics[scale = 0.5]{images/bow-stp-15-250.png}
 \end{figure}
 
 \subsection*{grid-1(step\_size=15), k-means: k = 500}
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth]{images/bow-stp-15-500.png}
+    \includegraphics[scale = 0.5]{images/bow-stp-15-500.png}
 \end{figure}
 
-\subsection*{grid-1(step\_size=15), k found by Mean Shift}
+%\subsection*{grid-1(step\_size=15), k found by Mean Shift}
+
 \subsection*{grid-1(step\_size=15), k-means: Meanshift found k}
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale = 0.5]{images/bow-stp-15-kmeanshift.png}
+\end{figure}
 
 \subsection*{grid-2(step\_size=10), k-means: k = 50}
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth]{images/bow-stp-10-50.png}
+    \includegraphics[scale = 0.5]{images/bow-stp-10-50.png}
 \end{figure}
 
 \subsection*{grid-2(step\_size=10), k-means: k = 250}
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth]{images/bow-stp-10-250.png}
+    \includegraphics[scale = 0.5]{images/bow-stp-10-250.png}
 \end{figure}
 
 \subsection*{grid-2(step\_size=10), k-means: k = 500}
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth]{images/bow-stp-10-500.png}
+    \includegraphics[scale = 0.5]{images/bow-stp-10-500.png}
 \end{figure}
 
-\subsection*{grid-2(step\_size=10), k found by Mean Shift}
+%\subsection*{grid-2(step\_size=10), k found by Mean Shift}
+
 \subsection*{grid-2(step\_size=10), k-means: Meanshift found k}
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale = 0.5]{images/bow-stp-10-kmeanshift.png}
+\end{figure}
 
 
-%\section*{Classifier Training}
 
-\section*{Results}
+\section*{Classifier Training and Results}
+
+After obtaining a histogram, I normalized the data that I have using a
+StandardScaler. I fitted the normalized histogram to a support vector machine
+and completed the training.
+
+Below, there are the predictions for each experiment.
+
 
 \subsection*{keypoints, k-means: k = 50}
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth]{images/confusion-kp-50.png}
+    \includegraphics[scale = 0.45]{images/confusion-kp-50.png}
     \caption*{Accuracy: \%66}
 \end{figure}
 
 \subsection*{keypoints, k-means: k = 250}
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth]{images/confusion-kp-250.png}
+    \includegraphics[scale = 0.45]{images/confusion-kp-250.png}
     \caption*{Accuracy: \%77.7}
 \end{figure}
 
 \subsection*{keypoints, k-means: k = 500}
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth]{images/confusion-kp-500.png}
+    \includegraphics[scale = 0.45]{images/confusion-kp-500.png}
     \caption*{Accuracy: \%83.8}
 \end{figure}
 
 \subsection*{keypoints, k found by Mean Shift}
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale = 0.45]{images/confusion-kp-meanshift.png}
+    \caption*{Accuracy: \%36.2 \\
+              Clusters Found: 2}
+\end{figure}
+
 \subsection*{keypoints, k-means: Meanshift found k}
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale = 0.45]{images/confusion-kp-kmeanshift.png}
+    \caption*{Accuracy: \%41 \\
+              Meanshift found k: 2}
+\end{figure}
 
 \subsection*{grid-1(step\_size=15), k-means: k = 50}
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth]{images/confusion-stp-15-50.png}
+    \includegraphics[scale = 0.45]{images/confusion-stp-15-50.png}
     \caption*{Accuracy: \%92.7}
 \end{figure}
 
 \subsection*{grid-1(step\_size=15), k-means: k = 250}
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth]{images/confusion-stp-15-250.png}
+    \includegraphics[scale = 0.45]{images/confusion-stp-15-250.png}
     \caption*{Accuracy: \%99}
 \end{figure}
 
 \subsection*{grid-1(step\_size=15), k-means: k = 500}
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth]{images/confusion-stp-15-500.png}
+    \includegraphics[scale = 0.45]{images/confusion-stp-15-500.png}
     \caption*{Accuracy: \%98.5}
 \end{figure}
 
 \subsection*{grid-1(step\_size=15), k found by Mean Shift}
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale = 0.45]{images/confusion-stp-15-meanshift.png}
+    \caption*{Accuracy: \%65 \\
+              Clusters Found: 4}
+\end{figure}
+
 \subsection*{grid-1(step\_size=15), k-means: Meanshift found k}
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale = 0.45]{images/confusion-stp-15-kmeanshift.png}
+    \caption*{Accuracy: \%81 \\
+              Meanshift found k: 4}
+\end{figure}
 
 \subsection*{grid-2(step\_size=10), k-means: k = 50}
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth]{images/confusion-stp-10-50.png}
+    \includegraphics[scale = 0.45]{images/confusion-stp-10-50.png}
     \caption*{Accuracy: \%91.2}
 \end{figure}
 
 \subsection*{grid-2(step\_size=10), k-means: k = 250}
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth]{images/confusion-stp-10-250.png}
+    \includegraphics[scale = 0.45]{images/confusion-stp-10-250.png}
     \caption*{Accuracy: \%98.5}
 \end{figure}
 
 \subsection*{grid-2(step\_size=10), k-means: k = 500}
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth]{images/confusion-stp-10-500.png}
+    \includegraphics[scale = 0.45]{images/confusion-stp-10-500.png}
     \caption*{Accuracy: \%98.8}
 \end{figure}
 
 \subsection*{grid-2(step\_size=10), k found by Mean Shift}
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale = 0.45]{images/confusion-stp-10-meanshift.png}
+    \caption*{Accuracy: \%66.7 \\
+              Clusters Found: 5}
+\end{figure}
+
 \subsection*{grid-2(step\_size=10), k-means: Meanshift found k}
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale = 0.45]{images/confusion-stp-15-kmeanshift.png}
+    \caption*{Accuracy: \%74.5 \\
+              Meanshift found k: 5}
+\end{figure}
 
 \section*{Comments}
+
+I can say that the k-means clustering algorithm did a great job when the step
+size for the grid was equal to 15 and k was equal to 250. I ended up with a 99\%
+accuracy, which I think is quite impressive.
+
+I was expecting more from the mean shift algorithm since it is a powerful
+algorithm and it took hours to complete the analysis. But for some reason, even
+if it took hours, the highest amount of clusters I found with meanshift was 5. 
+
+With this final assignment, I had a chance to use the cloud to do compute
+intensive tasks such as running meanshift with the default parameters.
 
