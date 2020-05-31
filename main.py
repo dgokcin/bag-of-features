@@ -44,7 +44,7 @@ def draw_keypoints(img, kp):
 def get_descriptors(sift, img, feature_extraction):
     if feature_extraction == 'kp':
         kp, des = sift.detectAndCompute(img, None)
-        draw_keypoints(img, kp)
+        # draw_keypoints(img, kp)
         return des
     if feature_extraction == 'grid':
         step_size = 15
@@ -53,7 +53,7 @@ def get_descriptors(sift, img, feature_extraction):
               for x in range(0, img.shape[1], step_size)]
 
         kp, des = sift.compute(img, kp)
-        draw_keypoints(img, kp)
+        # draw_keypoints(img, kp)
 
         return des
 
