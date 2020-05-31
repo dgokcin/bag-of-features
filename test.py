@@ -79,16 +79,17 @@ def clusterDescriptors(descriptors, no_clusters, alg):
         return kmeans
     elif alg == 'meanshift':
 
-        bandwidth = estimate_bandwidth(descriptors_normalized, quantile=0.2,
-                                       n_samples=500)
+        bandwidth = estimate_bandwidth(descriptors_normalized, quantile=.002,
+                                       n_samples=10000)
 
         ms = MeanShift(bandwidth=bandwidth, n_jobs=-1, bin_seeding=True,
                        cluster_all=False)
+        # ms = MeanShift(bandwidth=bandwidth, n_jobs=-1, bin_seeding=True)
         ms.fit(descriptors_normalized)
         labels = ms.labels_
         cluster_centers = ms.cluster_centers_
         print(bandwidth)
-        print(cluster_centers)
+        # print(cluster_centers)
 
         labels_unique = np.unique(labels)
         n_clusters_ = len(labels_unique)
