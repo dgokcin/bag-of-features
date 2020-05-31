@@ -45,7 +45,7 @@ def getDescriptors(sift, img, feature_extraction):
         # draw_keypoints(img, kp)
         return des
     if feature_extraction == 'grid':
-        step_size = 15
+        step_size = 10
         kp = [cv2.KeyPoint(x, y, step_size) for y in
               range(0, img.shape[0], step_size)
               for x in range(0, img.shape[1], step_size)]
